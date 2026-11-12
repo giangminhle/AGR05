@@ -1,0 +1,32 @@
+# Mẫu cấu hình. Chép thành application.yml (không commit file đó) rồi sửa chuỗi kết nối.
+spring:
+  datasource:
+    # Cách 1: tài khoản SQL Server (bật chế độ Mixed Mode và TCP/IP cổng 1433)
+    url: jdbc:sqlserver://localhost:1433;databaseName=AGR05_QuanLySauBenh;encrypt=false
+    username: agr05_app
+    password: DOI_MAT_KHAU_O_DAY
+    # Cách 2: đăng nhập Windows: thêm ;integratedSecurity=true vào url, bỏ username/password,
+    # và cần file mssql-jdbc_auth-*.dll trong PATH hoặc -Djava.library.path
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 30MB
+  jackson:
+    default-property-inclusion: always
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 8h
+      cookie:
+        same-site: lax
+        http-only: true
+
+agr05:
+  thu-muc-anh: du-lieu/anh
+  thu-muc-mo-hinh: du-lieu/mo-hinh
+  # false để tắt chức năng nền 60 giây (HanXuLyScheduler)
+  lich-nen: true

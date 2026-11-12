@@ -1,0 +1,15 @@
+# Java / Maven
+backend/target/
+# Cấu hình có mật khẩu thật (commit application-example.yml thay thế)
+backend/src/main/resources/application.yml
+# Ảnh hiện trường và file mô hình AI sinh ra khi chạy
+backend/du-lieu/
+du-lieu/
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+# IDE
+.idea/
+.vscode/
+*.iml
