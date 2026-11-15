@@ -13,6 +13,8 @@ export const authApi = {
   dangNhap: (tenDangNhap, matKhau) => goiApi('/auth/dang-nhap', { method: 'POST', json: { tenDangNhap, matKhau } }),
   dangXuat: () => goiApi('/auth/dang-xuat', { method: 'POST' }),
   toi: () => goiApi('/auth/toi'),
+  dangKy: (nd) => goiApi('/auth/dang-ky', { method: 'POST', json: nd }),
+  doiMatKhau: (matKhauCu, matKhauMoi) => goiApi('/auth/doi-mat-khau', { method: 'POST', json: { matKhauCu, matKhauMoi } }),
 };
 
 export const baoCaoApi = {
@@ -40,6 +42,7 @@ export const xacMinhApi = {
   duyet: (ma, maLoai, khuyenNghi) => goiApi(`/xac-minh/${ma}/duyet`, { method: 'POST', json: { maLoai, khuyenNghi } }),
   tuChoi: (ma, lyDo) => goiApi(`/xac-minh/${ma}/tu-choi`, { method: 'POST', json: { lyDo } }),
   daXuLy: (ma, ghiChu) => goiApi(`/xac-minh/${ma}/da-xu-ly`, { method: 'POST', json: { ghiChu } }),
+  deNghiLoai: (ma, tenLoai, ghiChu) => goiApi(`/xac-minh/${ma}/de-nghi-loai`, { method: 'POST', json: { tenLoai, ghiChu } }),
 };
 
 export const thongBaoApi = {
@@ -77,6 +80,18 @@ export const nguoiDungApi = {
   tao: (nd) => goiApi('/nguoi-dung', { method: 'POST', json: nd }),
   sua: (ma, nd) => goiApi(`/nguoi-dung/${ma}`, { method: 'PUT', json: nd }),
   khoa: (ma, khoa) => goiApi(`/nguoi-dung/${ma}/khoa`, { method: 'POST', json: { khoa } }),
+  datLaiMatKhau: (ma, matKhauMoi) => goiApi(`/nguoi-dung/${ma}/dat-lai-mat-khau`, { method: 'POST', json: { matKhauMoi } }),
+};
+
+export const quanTriBaoCaoApi = {
+  timKiem: ({ trangThai, maKhuVuc, tuKhoa }) => {
+    const q = new URLSearchParams();
+    if (trangThai) q.set('trangThai', trangThai);
+    if (maKhuVuc) q.set('maKhuVuc', maKhuVuc);
+    if (tuKhoa) q.set('tuKhoa', tuKhoa);
+    return goiApi('/quan-tri/bao-cao?' + q.toString());
+  },
+  chiTiet: (ma) => goiApi(`/quan-tri/bao-cao/${ma}`),
 };
 
 export const thamSoApi = {

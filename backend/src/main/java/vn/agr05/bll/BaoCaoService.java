@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import vn.agr05.dal.IBaoCaoDal;
+import vn.agr05.dal.IDuBaoDal;
 import vn.agr05.dal.IHinhAnhDal;
 import vn.agr05.dal.IKhuVucDal;
 import vn.agr05.dal.ILichSuDal;
@@ -29,19 +30,21 @@ public class BaoCaoService {
     private final ILichSuDal lichSuDal;
     private final INguoiDungDal nguoiDungDal;
     private final IKhuVucDal khuVucDal;
+    private final IDuBaoDal duBaoDal;
     private final ThongBaoService thongBaoService;
     private final ThamSoService thamSoService;
     private final AnhStorage anhStorage;
     private final TransactionTemplate tx;
 
     public BaoCaoService(IBaoCaoDal baoCaoDal, IHinhAnhDal hinhAnhDal, ILichSuDal lichSuDal, INguoiDungDal nguoiDungDal,
-                         IKhuVucDal khuVucDal, ThongBaoService thongBaoService, ThamSoService thamSoService,
-                         AnhStorage anhStorage, TransactionTemplate tx) {
+                         IKhuVucDal khuVucDal, IDuBaoDal duBaoDal, ThongBaoService thongBaoService,
+                         ThamSoService thamSoService, AnhStorage anhStorage, TransactionTemplate tx) {
         this.baoCaoDal = baoCaoDal;
         this.hinhAnhDal = hinhAnhDal;
         this.lichSuDal = lichSuDal;
         this.nguoiDungDal = nguoiDungDal;
         this.khuVucDal = khuVucDal;
+        this.duBaoDal = duBaoDal;
         this.thongBaoService = thongBaoService;
         this.thamSoService = thamSoService;
         this.anhStorage = anhStorage;
@@ -96,6 +99,30 @@ public class BaoCaoService {
             bc.setDuocSua(bc.choPhepSua(maNguoiDung, hanNgay));
         }
         return ds;
+    }
+
+    /** Quản trị viên tra cứu mọi báo cáo (để theo dõi báo cáo quá hạn, phân công lại). Chỉ đọc. */
+    public List<BaoCaoHienTruong> timKiemQuanTri(String trangThai, Integer maKhuVuc, String tuKhoa) {
+        int hanGio = thamSoService.layGiaTri(ThamSo.HAN_XAC_MINH_GIO);
+        List<BaoCaoHienTruong> ds = baoCaoDal.timKiem(rong(trangThai), maKhuVuc, rong(tuKhoa));
+        ds.forEach(bc -> bc.setQuaHan(bc.isQuaHan() || bc.laQuaHan(hanGio)));
+        return ds;
+    }
+
+    /** Chi tiết một báo cáo cho Quản trị viên: ảnh, lịch sử, dự báo. Chỉ đọc. */
+    public BaoCaoHienTruong layChiTietQuanTri(int ma) {
+        BaoCaoHienTruong bc = baoCaoDal.getById(ma);
+        if (bc == null) {
+            throw NghiepVuException.khongTimThay("Không tìm thấy báo cáo.");
+        }
+        napChiTiet(bc);
+        bc.setDuBao(duBaoDal.getByBaoCao(ma));
+        bc.setQuaHan(bc.isQuaHan() || bc.laQuaHan(thamSoService.layGiaTri(ThamSo.HAN_XAC_MINH_GIO)));
+        return bc;
+    }
+
+    private static String rong(String s) {
+        return s == null || s.isBlank() ? null : s;
     }
 
     /** Mục 3.3.8: lấy báo cáo để sửa, entity quyết định có cho sửa không (choPhepSua). */

@@ -4,8 +4,10 @@ import { Spinner } from 'react-bootstrap';
 import { authApi } from './api/index.js';
 import { datXuLyHetPhien } from './api/client.js';
 import { VaiTro } from './hangSo.js';
+import { trangChinh } from './dieuHuong.js';
 import { PhienContext } from './components/PhienDangNhap.jsx';
 import { ThongBaoNhoProvider } from './components/ThongBaoNho.jsx';
+import { XacNhanProvider } from './components/XacNhan.jsx';
 import DangNhapPage from './pages/DangNhapPage.jsx';
 import MainLayout from './pages/MainLayout.jsx';
 import BaoCaoHienTruongPage from './pages/BaoCaoHienTruongPage.jsx';
@@ -18,15 +20,11 @@ import KhuVucPage from './pages/KhuVucPage.jsx';
 import NguoiDungPage from './pages/NguoiDungPage.jsx';
 import CauHinhPage from './pages/CauHinhPage.jsx';
 import MoHinhAIPage from './pages/MoHinhAIPage.jsx';
+import DangKyPage from './pages/DangKyPage.jsx';
+import DoiMatKhauPage from './pages/DoiMatKhauPage.jsx';
+import QuanLyBaoCaoPage from './pages/QuanLyBaoCaoPage.jsx';
 
 const { NONG_DAN, CHUYEN_GIA, QUAN_TRI } = VaiTro;
-
-/** Trang chính theo vai trò. */
-function trangChinh(vaiTro) {
-  if (vaiTro === NONG_DAN) return '/bao-cao/cua-toi';
-  if (vaiTro === CHUYEN_GIA) return '/xac-minh';
-  return '/thong-ke';
-}
 
 /** Chỉ hiện trang đúng vai trò; sai vai trò thì về trang chính (quyền thật do backend kiểm tra). */
 function TheoVaiTro({ nguoiDung, cho, children }) {
@@ -61,6 +59,7 @@ export default function App() {
     return (
       <ThongBaoNhoProvider>
         <Routes>
+          <Route path="/dang-ky" element={<DangKyPage onDangNhap={(nd) => { setNguoiDung(nd); dieuHuong(trangChinh(nd.vaiTro)); }} />} />
           <Route path="*" element={<DangNhapPage onDangNhap={(nd) => { setNguoiDung(nd); dieuHuong(trangChinh(nd.vaiTro)); }} />} />
         </Routes>
       </ThongBaoNhoProvider>
@@ -72,6 +71,7 @@ export default function App() {
   return (
     <PhienContext.Provider value={nguoiDung}>
       <ThongBaoNhoProvider>
+        <XacNhanProvider>
         <Routes>
           <Route element={<MainLayout onDangXuat={() => { setNguoiDung(null); dieuHuong('/dang-nhap'); }} />}>
             <Route path="/bao-cao/moi" element={bao([NONG_DAN], <BaoCaoHienTruongPage />)} />
@@ -79,6 +79,8 @@ export default function App() {
             <Route path="/bao-cao/cua-toi" element={bao([NONG_DAN], <TheoDoiBaoCaoPage />)} />
             <Route path="/xac-minh" element={bao([CHUYEN_GIA], <XacMinhPage />)} />
             <Route path="/thong-bao" element={<ThongBaoPage />} />
+            <Route path="/doi-mat-khau" element={<DoiMatKhauPage />} />
+            <Route path="/quan-tri/bao-cao" element={bao([QUAN_TRI], <QuanLyBaoCaoPage />)} />
             <Route path="/thong-ke" element={bao([CHUYEN_GIA, QUAN_TRI], <ThongKePage />)} />
             <Route path="/quan-tri/sau-benh" element={bao([QUAN_TRI], <DanhMucSauBenhPage />)} />
             <Route path="/quan-tri/khu-vuc" element={bao([QUAN_TRI], <KhuVucPage />)} />
@@ -88,6 +90,7 @@ export default function App() {
             <Route path="*" element={<Navigate to={trangChinh(nguoiDung.vaiTro)} replace />} />
           </Route>
         </Routes>
+        </XacNhanProvider>
       </ThongBaoNhoProvider>
     </PhienContext.Provider>
   );

@@ -176,6 +176,41 @@ public class XacMinhService {
         return true;
     }
 
+    /**
+     * Loại sâu bệnh trên ảnh chưa có trong danh mục: chuyên gia gửi đề nghị cho Quản trị viên (chỉ Quản trị viên được
+     * sửa danh mục, UC13). Báo cáo giữ nguyên Chờ xác minh; lịch sử ghi lại lần đề nghị.
+     */
+    public boolean deNghiThemLoai(int ma, String tenLoai, String ghiChu, int maCG) {
+        String ten = rongThanhNull(tenLoai);
+        if (ten == null) {
+            throw NghiepVuException.khongHopLe("Vui lòng nhập tên loại sâu bệnh nghi ngờ.", "tenLoai");
+        }
+        if (ten.length() > 100) {
+            throw NghiepVuException.khongHopLe("Tên loại sâu bệnh tối đa 100 ký tự.", "tenLoai");
+        }
+        boolean daCo = loaiSauBenhDal.getAll().stream().anyMatch(l -> l.getTenLoai().equalsIgnoreCase(ten));
+        if (daCo) {
+            throw NghiepVuException.khongHopLe("\"" + ten + "\" đã có trong danh mục, hãy chọn trong danh sách.", "tenLoai");
+        }
+        BaoCaoHienTruong bc = layBaoCao(ma);
+        if (!TrangThai.CHO_XAC_MINH.equals(bc.getTrangThai())) {
+            throw NghiepVuException.xungDot(LOI_DA_XU_LY);
+        }
+        kiemTraQuyen(bc, maCG);
+        String them = rongThanhNull(ghiChu);
+        String noiDung = "Đề nghị thêm loại sâu bệnh: " + ten + (them == null ? "" : ". " + them);
+        String tenCG = nguoiDungDal.getById(maCG).getHoTen();
+        tx.executeWithoutResult(s -> {
+            lichSuDal.insert(BaoCaoService.lichSu(ma, maCG, TrangThai.CHO_XAC_MINH, TrangThai.CHO_XAC_MINH, noiDung));
+            thongBaoService.taoThongBaoChoNhieu(nguoiDungDal.getQuanTri(), LoaiThongBao.DANH_MUC, ma,
+                    "Đề nghị thêm loại sâu bệnh: " + ten,
+                    "Chuyên gia " + tenCG + " đề nghị thêm \"" + ten + "\" vào danh mục để xác minh báo cáo #" + ma
+                            + " (" + bc.getTieuDe() + ")." + (them == null ? "" : " Ghi chú: " + them)
+                            + " Vào Quản trị → Danh mục sâu bệnh để thêm.");
+        });
+        return true;
+    }
+
     /** Dự báo đã lưu của báo cáo (để API duyệt trả về cho trang). */
     public DuBaoNguyCo layDuBao(int ma) {
         return aiService.layDuBaoCuaBaoCao(ma);

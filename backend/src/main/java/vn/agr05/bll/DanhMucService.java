@@ -8,6 +8,7 @@ import vn.agr05.dal.ILoaiSauBenhDal;
 import vn.agr05.dal.INguoiDungDal;
 import vn.agr05.entity.KhuVuc;
 import vn.agr05.entity.LoaiSauBenh;
+import vn.agr05.entity.LoaiThongBao;
 import vn.agr05.entity.NghiepVuException;
 import vn.agr05.entity.NguoiDung;
 import vn.agr05.entity.VaiTro;
@@ -19,11 +20,14 @@ public class DanhMucService {
     private final ILoaiSauBenhDal loaiSauBenhDal;
     private final IKhuVucDal khuVucDal;
     private final INguoiDungDal nguoiDungDal;
+    private final ThongBaoService thongBaoService;
 
-    public DanhMucService(ILoaiSauBenhDal loaiSauBenhDal, IKhuVucDal khuVucDal, INguoiDungDal nguoiDungDal) {
+    public DanhMucService(ILoaiSauBenhDal loaiSauBenhDal, IKhuVucDal khuVucDal, INguoiDungDal nguoiDungDal,
+                          ThongBaoService thongBaoService) {
         this.loaiSauBenhDal = loaiSauBenhDal;
         this.khuVucDal = khuVucDal;
         this.nguoiDungDal = nguoiDungDal;
+        this.thongBaoService = thongBaoService;
     }
 
     public List<LoaiSauBenh> layLoaiSauBenh() {
@@ -38,7 +42,15 @@ public class DanhMucService {
         loai.setTenLoai(loai.getTenLoai().trim());
         try {
             if (loai.getMaLoai() == null) {
-                return loaiSauBenhDal.insert(loai);
+                int ma = loaiSauBenhDal.insert(loai);
+                // Báo mọi chuyên gia đang hoạt động: có thể đang có báo cáo chờ loại này để xác minh
+                List<NguoiDung> dsCG = nguoiDungDal.getAll().stream()
+                        .filter(n -> VaiTro.CHUYEN_GIA.equals(n.getVaiTro()) && !n.isBiKhoa()).toList();
+                thongBaoService.taoThongBaoChoNhieu(dsCG, LoaiThongBao.DANH_MUC, null,
+                        "Danh mục có loại sâu bệnh mới: " + loai.getTenLoai(),
+                        "Quản trị viên đã thêm \"" + loai.getTenLoai() + "\" vào danh mục. Báo cáo đang chờ loại này "
+                                + "có thể xác minh ngay (tải lại trang Xác minh báo cáo).");
+                return ma;
             }
             if (!loaiSauBenhDal.update(loai)) {
                 throw NghiepVuException.khongTimThay("Không tìm thấy loại sâu bệnh.");

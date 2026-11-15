@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, ButtonGroup, Card, Col, Form, Row, Spinner, Table, ToggleButton } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Card, Col, Form, Modal, Row, Spinner, Table, ToggleButton } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
 import { danhMucApi, xacMinhApi } from '../api/index.js';
 import { TrangThai } from '../hangSo.js';
@@ -8,7 +8,11 @@ import { usePhien } from '../components/PhienDangNhap.jsx';
 import { NguyCoBadge, TrangThaiBadge } from '../components/HuyHieu.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 import BangLichSu from '../components/BangLichSu.jsx';
+import ThongTin from '../components/ThongTin.jsx';
 import XemAnh from '../components/XemAnh.jsx';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import { usePhanTrang } from '../components/PhanTrang.jsx';
+import LinkBanDo from '../components/LinkBanDo.jsx';
 import ONhap from '../components/ONhap.jsx';
 
 /** 6.2.5 Xác minh báo cáo (UC05–UC10, UC18). Trái: danh sách chờ; phải: chi tiết; dưới: kết luận. */
@@ -22,6 +26,7 @@ export default function XacMinhPage() {
   const [dsLoai, setDsLoai] = useState([]);
   const [locKhuVuc, setLocKhuVuc] = useState('');
   const [locMucDo, setLocMucDo] = useState('');
+  const [tim, setTim] = useState('');
   const [chon, setChon] = useState(Number(thamSo.get('ma')) || null);
   const [chiTiet, setChiTiet] = useState(null);
   const [maLoai, setMaLoai] = useState('');
@@ -29,6 +34,7 @@ export default function XacMinhPage() {
   const [nguyCo, setNguyCo] = useState(undefined);
   const [loi, setLoi] = useState(null);
   const [dangGui, setDangGui] = useState(false);
+  const [deNghi, setDeNghi] = useState(null); // null: đóng; { tenLoai, ghiChu, loi }: đang mở hộp đề nghị
 
   const taiDanhSach = useCallback(() => {
     const goi = che === 'cho' ? xacMinhApi.layDanhSachCho() : xacMinhApi.layDaXacMinh();
@@ -42,8 +48,12 @@ export default function XacMinhPage() {
 
   useEffect(() => {
     danhMucApi.layKhuVuc().then((kv) => setDsKhuVuc(kv.filter((k) => nguoiDung.dsMaKhuVuc.includes(k.maKhuVuc))));
-    danhMucApi.layLoai().then(setDsLoai);
   }, [nguoiDung]);
+
+  // Tải lại danh mục mỗi lần mở báo cáo: Quản trị viên có thể vừa thêm loại mới theo đề nghị
+  useEffect(() => {
+    danhMucApi.layLoai().then(setDsLoai).catch(() => {});
+  }, [chon]);
 
   useEffect(() => {
     setChiTiet(null);
@@ -85,14 +95,34 @@ export default function XacMinhPage() {
   }
 
   const nutTuChoi = () => thucHien(() => xacMinhApi.tuChoi(chon, khuyenNghi), 'Đã từ chối báo cáo.');
+  async function guiDeNghi() {
+    setDangGui(true);
+    try {
+      await xacMinhApi.deNghiLoai(chon, deNghi.tenLoai, deNghi.ghiChu);
+      setDeNghi(null);
+      hienToast('Đã gửi đề nghị cho Quản trị viên. Bạn sẽ nhận thông báo khi danh mục có loại mới.');
+      setChiTiet(await xacMinhApi.layChiTiet(chon));
+    } catch (e) {
+      setDeNghi((d) => ({ ...d, loi: e }));
+    } finally {
+      setDangGui(false);
+    }
+  }
+
   const nutDaXuLy = () => thucHien(() => xacMinhApi.daXuLy(chon, khuyenNghi), 'Đã đánh dấu đã xử lý.');
 
   const loaiChon = dsLoai.find((l) => String(l.maLoai) === maLoai);
-  const hien = (ds || []).filter((b) => (!locKhuVuc || String(b.maKhuVuc) === locKhuVuc) && (!locMucDo || String(b.mucDo) === locMucDo));
+  const tk = tim.trim().toLowerCase();
+  const hien = (ds || []).filter((b) => (!locKhuVuc || String(b.maKhuVuc) === locKhuVuc) && (!locMucDo || String(b.mucDo) === locMucDo)
+    && (!tk || b.tieuDe.toLowerCase().includes(tk) || String(b.maBaoCao) === tk));
+  const { dsTrang, dieuKhien } = usePhanTrang(hien, che + locKhuVuc + locMucDo + tk, 10);
   const choDuyet = chiTiet?.trangThai === TrangThai.CHO_XAC_MINH;
   const choXuLy = chiTiet?.trangThai === TrangThai.DA_XAC_MINH;
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Xác minh báo cáo" quayLai={Boolean(thamSo.get('ma'))}
+      moTa="Báo cáo trong các khu vực bạn phụ trách. Dòng đỏ là báo cáo đã quá hạn xác minh." />
     <Row>
       <Col lg={5}>
         <Card className="mb-3">
@@ -119,6 +149,7 @@ export default function XacMinhPage() {
                 </Form.Select>
               </Col>
             </Row>
+            <Form.Control size="sm" className="mt-2" placeholder="Tìm theo tiêu đề hoặc mã báo cáo..." value={tim} onChange={(e) => setTim(e.target.value)} />
           </Card.Header>
           <Card.Body className="p-0">
             {!ds ? (
@@ -126,7 +157,7 @@ export default function XacMinhPage() {
             ) : hien.length === 0 ? (
               <p className="text-muted p-3 mb-0">Không có báo cáo cần xử lý.</p>
             ) : (
-              <Table hover size="sm" className="bang-chon mb-0">
+              <Table hover responsive size="sm" className="bang-chon mb-0">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -137,7 +168,7 @@ export default function XacMinhPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {hien.map((b) => (
+                  {dsTrang.map((b) => (
                     <tr key={b.maBaoCao} onClick={() => setChon(b.maBaoCao)}
                       className={(b.quaHan ? 'dong-qua-han ' : '') + (b.maBaoCao === chon ? 'dong-chon' : '')}
                       title={b.quaHan ? 'Quá hạn xác minh' : ''}>
@@ -151,6 +182,7 @@ export default function XacMinhPage() {
                 </tbody>
               </Table>
             )}
+            {dieuKhien}
           </Card.Body>
         </Card>
       </Col>
@@ -163,7 +195,7 @@ export default function XacMinhPage() {
           <>
             <Card className="mb-3">
               <Card.Header className="d-flex justify-content-between">
-                <span><b>#{chiTiet.maBaoCao} {chiTiet.tieuDe}</b> {chiTiet.quaHan && <span className="text-danger">(quá hạn)</span>}</span>
+                <span>#{chiTiet.maBaoCao} · {chiTiet.tieuDe} {chiTiet.quaHan && <span className="nhan nhan-BI_BAC_BO ms-1">Quá hạn</span>}</span>
                 <TrangThaiBadge ma={chiTiet.trangThai} />
               </Card.Header>
               <Card.Body>
@@ -172,22 +204,25 @@ export default function XacMinhPage() {
                     <XemAnh dsHinhAnh={chiTiet.dsHinhAnh} />
                   </Col>
                   <Col md={6}>
-                    <p className="mb-1">Người gửi: {chiTiet.tenNguoiGui}</p>
-                    <p className="mb-1">Khu vực: {chiTiet.tenKhuVuc}</p>
-                    <p className="mb-1">Cây trồng: {chiTiet.tenCayTrong} – Mức độ {chiTiet.mucDo}</p>
-                    <p className="mb-1">Phát hiện: {chiTiet.ngayPhatHien} – Gửi: {ngayGio(chiTiet.ngayGui)}</p>
-                    <p className="mb-1">Tọa độ: {chiTiet.viDo}, {chiTiet.kinhDo}</p>
-                    <p className="mb-1">Đã gửi lại: {chiTiet.soLanGuiLai} lần</p>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{chiTiet.moTa}</p>
+                    <ThongTin dong={[
+                      ['Người gửi', chiTiet.tenNguoiGui],
+                      ['Khu vực', chiTiet.tenKhuVuc],
+                      ['Cây trồng', `${chiTiet.tenCayTrong} · mức độ ${chiTiet.mucDo}`],
+                      ['Phát hiện', chiTiet.ngayPhatHien],
+                      ['Gửi lúc', ngayGio(chiTiet.ngayGui)],
+                      ['Tọa độ', <>{chiTiet.viDo}, {chiTiet.kinhDo}<LinkBanDo viDo={chiTiet.viDo} kinhDo={chiTiet.kinhDo} /></>],
+                      ['Đã gửi lại', `${chiTiet.soLanGuiLai} lần`],
+                    ]} />
+                    <div className="mo-ta-hien-truong">{chiTiet.moTa}</div>
                   </Col>
                 </Row>
-                <h6 className="mt-2">Lịch sử xử lý</h6>
+                <div className="tieu-de-muc">Lịch sử xử lý</div>
                 <BangLichSu ds={chiTiet.dsLichSu} />
               </Card.Body>
             </Card>
 
             <Card>
-              <Card.Header as="h6">Kết luận</Card.Header>
+              <Card.Header>Kết luận</Card.Header>
               <Card.Body>
                 <Row>
                   <Col md={6}>
@@ -199,6 +234,13 @@ export default function XacMinhPage() {
                         </Form.Select>
                       )}
                     </ONhap>
+                    {choDuyet && (
+                      <div className="small mb-3" style={{ marginTop: '-0.5rem' }}>
+                        Không có trong danh sách?{' '}
+                        <Button variant="link" size="sm" className="p-0 align-baseline"
+                          onClick={() => setDeNghi({ tenLoai: '', ghiChu: '', loi: null })}>Đề nghị thêm loại mới</Button>
+                      </div>
+                    )}
                     <Form.Label>Triệu chứng, biện pháp phòng trừ</Form.Label>
                     <div className="border rounded p-2 bg-light small mb-3" style={{ minHeight: 70 }}>
                       {loaiChon ? (
@@ -235,5 +277,31 @@ export default function XacMinhPage() {
         )}
       </Col>
     </Row>
+
+    <Modal show={deNghi !== null} onHide={() => setDeNghi(null)} centered>
+      <Modal.Header closeButton>
+        <Modal.Title as="h5">Đề nghị thêm loại sâu bệnh</Modal.Title>
+      </Modal.Header>
+      {deNghi && (
+        <Modal.Body>
+          <p className="text-muted small">
+            Chỉ Quản trị viên được sửa danh mục. Đề nghị được gửi kèm mã báo cáo #{chon}; báo cáo vẫn ở trạng thái Chờ xác minh
+            và lần đề nghị được ghi vào lịch sử xử lý.
+          </p>
+          {deNghi.loi && !deNghi.loi.truong && <Alert variant="danger">{deNghi.loi.loi}</Alert>}
+          <ONhap ten="tenLoai" nhan="Tên loại sâu bệnh nghi ngờ" batBuoc loi={deNghi.loi} value={deNghi.tenLoai} maxLength={100}
+            autoFocus placeholder="Ví dụ: Bệnh lem lép hạt" onChange={(e) => setDeNghi({ ...deNghi, tenLoai: e.target.value })} />
+          <ONhap ten="ghiChuDeNghi" nhan="Ghi chú cho Quản trị viên (triệu chứng nhận thấy)" as="textarea" rows={3} maxLength={300}
+            value={deNghi.ghiChu} onChange={(e) => setDeNghi({ ...deNghi, ghiChu: e.target.value })} />
+        </Modal.Body>
+      )}
+      <Modal.Footer>
+        <Button variant="outline-secondary" onClick={() => setDeNghi(null)}>Hủy</Button>
+        <Button variant="success" onClick={guiDeNghi} disabled={dangGui}>
+          {dangGui && <Spinner size="sm" className="me-2" />}Gửi đề nghị
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    </>
   );
 }

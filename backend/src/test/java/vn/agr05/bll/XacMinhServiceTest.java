@@ -166,4 +166,26 @@ class XacMinhServiceTest {
         assertThat(ht.xacMinh.layDanhSachCho(cgA.getMaNguoiDung())).singleElement()
                 .satisfies(b -> assertThat(b.isQuaHan()).isTrue());
     }
+
+    @Test
+    void deNghiThemLoai_baoQuanTri_ghiLichSu_baoCaoVanCho() {
+        NguoiDung qt = ht.db.themNguoiDung("qt", VaiTro.QUAN_TRI, "123456");
+        BaoCaoHienTruong bc = choXacMinh();
+        assertThat(ht.xacMinh.deNghiThemLoai(bc.getMaBaoCao(), "Bệnh lem lép hạt", "Hạt có đốm nâu", cgA.getMaNguoiDung())).isTrue();
+        assertThat(ht.db.timBaoCao(bc.getMaBaoCao()).getTrangThai()).isEqualTo(TrangThai.CHO_XAC_MINH);
+        assertThat(ht.db.lichSuDal.getByBaoCao(bc.getMaBaoCao()))
+                .anyMatch(l -> l.getGhiChu() != null && l.getGhiChu().contains("Bệnh lem lép hạt"));
+        assertThat(ht.db.thongBaoCua(qt.getMaNguoiDung()))
+                .anyMatch(t -> LoaiThongBao.DANH_MUC.equals(t.getLoai()) && t.getTieuDe().contains("Bệnh lem lép hạt"));
+    }
+
+    @Test
+    void deNghiThemLoai_tenTrong_daCoTrongDanhMuc_khongPhuTrach_baoLoi() {
+        BaoCaoHienTruong bc = choXacMinh();
+        int ma = bc.getMaBaoCao();
+        assertThatThrownBy(() -> ht.xacMinh.deNghiThemLoai(ma, " ", null, cgA.getMaNguoiDung())).hasMessageContaining("tên loại");
+        assertThatThrownBy(() -> ht.xacMinh.deNghiThemLoai(ma, "rầy NÂU", null, cgA.getMaNguoiDung())).hasMessageContaining("đã có");
+        assertThatThrownBy(() -> ht.xacMinh.deNghiThemLoai(ma, "Bệnh mới", null, cgB.getMaNguoiDung()))
+                .isInstanceOfSatisfying(NghiepVuException.class, e -> assertThat(e.getLoai()).isEqualTo(NghiepVuException.Loai.KHONG_DU_QUYEN));
+    }
 }

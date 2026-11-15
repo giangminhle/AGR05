@@ -13,13 +13,6 @@ export const TEN_TRANG_THAI = {
   DA_XU_LY: 'Đã xử lý',
 };
 
-export const MAU_TRANG_THAI = {
-  CHO_XAC_MINH: 'warning',
-  DA_XAC_MINH: 'success',
-  BI_BAC_BO: 'danger',
-  DA_XU_LY: 'secondary',
-};
-
 export const VaiTro = {
   NONG_DAN: 'NONG_DAN',
   CHUYEN_GIA: 'CHUYEN_GIA',
@@ -38,13 +31,12 @@ export const TEN_LOAI_THONG_BAO = {
   QUA_HAN: 'Báo cáo quá hạn',
   DONG_HO_SO: 'Đóng hồ sơ',
   CANH_BAO_DICH: 'Cảnh báo dịch hại',
+  DANH_MUC: 'Danh mục sâu bệnh',
 };
 
 export const MucNguyCo = { THAP: 'THAP', TRUNG_BINH: 'TRUNG_BINH', CAO: 'CAO' };
 
 export const TEN_MUC_NGUY_CO = { THAP: 'Thấp', TRUNG_BINH: 'Trung bình', CAO: 'Cao' };
-
-export const MAU_MUC_NGUY_CO = { THAP: 'success', TRUNG_BINH: 'warning', CAO: 'danger' };
 
 export const TOI_DA_ANH = 5;
 export const TOI_DA_BYTE_ANH = 5 * 1024 * 1024;

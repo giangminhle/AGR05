@@ -37,7 +37,9 @@ export async function goiApi(duongDan, { method = 'GET', json, formData } = {}) 
     du = await res.json();
   }
   if (!res.ok) {
-    if (res.status === 401 && xuLyHetPhien && duongDan !== '/auth/dang-nhap') xuLyHetPhien();
+    // 401 khi đang dùng nghĩa là hết phiên; riêng các API kiểm tra phiên, đăng nhập, đăng ký thì không chuyển trang
+    const khongChuyen = ['/auth/toi', '/auth/dang-nhap', '/auth/dang-ky'].includes(duongDan);
+    if (res.status === 401 && xuLyHetPhien && !khongChuyen) xuLyHetPhien();
     throw new LoiApi(du?.loi || `Lỗi ${res.status}`, du?.truong || null, res.status);
   }
   return du;

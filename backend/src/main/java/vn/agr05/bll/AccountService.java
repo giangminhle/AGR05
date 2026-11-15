@@ -43,6 +43,18 @@ public class AccountService {
         return nd;
     }
 
+    /**
+     * Phiên đang mở còn dùng được không: tài khoản chưa bị khóa và vai trò chưa bị đổi kể từ lúc đăng nhập.
+     * Quản trị viên khóa hoặc đổi vai trò thì người đó phải đăng nhập lại ngay, không đợi hết phiên.
+     */
+    public boolean phienConHieuLuc() {
+        if (!appSession.daDangNhap()) {
+            return true;
+        }
+        NguoiDung nd = nguoiDungDal.getById(appSession.layMa());
+        return nd != null && !nd.isBiKhoa() && nd.getVaiTro().equals(appSession.layVaiTro());
+    }
+
     /** Tạo tài khoản mới, băm mật khẩu PBKDF2 với muối riêng (SEC01). */
     public int taoTaiKhoan(NguoiDung nd, String matKhau) {
         kiemTraThongTin(nd);
@@ -54,14 +66,54 @@ public class AccountService {
         if (nguoiDungDal.getByTenDangNhap(ten) != null) {
             throw NghiepVuException.khongHopLe("Tên đăng nhập đã tồn tại.", "tenDangNhap");
         }
-        if (matKhau == null || matKhau.length() < 6) {
-            throw NghiepVuException.khongHopLe("Mật khẩu phải có ít nhất 6 ký tự.", "matKhau");
-        }
+        kiemTraMatKhau(matKhau, "matKhau");
         nd.setTenDangNhap(ten);
         nd.setMuoi(MatKhau.taoMuoi());
         nd.setMatKhauHash(MatKhau.bam(matKhau, nd.getMuoi()));
         nd.setBiKhoa(false);
         return nguoiDungDal.insert(nd);
+    }
+
+    /** Nông dân tự đăng ký: vai trò luôn là Nông dân; chuyên gia, quản trị viên do Quản trị viên tạo. */
+    public int dangKy(NguoiDung nd, String matKhau) {
+        nd.setVaiTro(VaiTro.NONG_DAN);
+        return taoTaiKhoan(nd, matKhau);
+    }
+
+    /** Người dùng tự đổi mật khẩu: phải nhập đúng mật khẩu hiện tại. */
+    public boolean doiMatKhau(int ma, String matKhauCu, String matKhauMoi) {
+        NguoiDung nd = nguoiDungDal.getById(ma);
+        if (nd == null) {
+            throw NghiepVuException.khongTimThay("Không tìm thấy người dùng.");
+        }
+        if (matKhauCu == null || !nd.xacThucMatKhau(matKhauCu)) {
+            throw NghiepVuException.khongHopLe("Mật khẩu hiện tại không đúng.", "matKhauCu");
+        }
+        kiemTraMatKhau(matKhauMoi, "matKhauMoi");
+        if (matKhauMoi.equals(matKhauCu)) {
+            throw NghiepVuException.khongHopLe("Mật khẩu mới phải khác mật khẩu hiện tại.", "matKhauMoi");
+        }
+        return ghiMatKhau(ma, matKhauMoi);
+    }
+
+    /** Quản trị viên đặt lại mật khẩu khi người dùng quên. */
+    public boolean datLaiMatKhau(int ma, String matKhauMoi) {
+        if (nguoiDungDal.getById(ma) == null) {
+            throw NghiepVuException.khongTimThay("Không tìm thấy người dùng.");
+        }
+        kiemTraMatKhau(matKhauMoi, "matKhauMoi");
+        return ghiMatKhau(ma, matKhauMoi);
+    }
+
+    private boolean ghiMatKhau(int ma, String matKhau) {
+        String muoi = MatKhau.taoMuoi();
+        return nguoiDungDal.updateMatKhau(ma, MatKhau.bam(matKhau, muoi), muoi);
+    }
+
+    private static void kiemTraMatKhau(String matKhau, String truong) {
+        if (matKhau == null || matKhau.length() < 6 || matKhau.length() > 100) {
+            throw NghiepVuException.khongHopLe("Mật khẩu phải có từ 6 đến 100 ký tự.", truong);
+        }
     }
 
     /** Sửa họ tên, điện thoại, vai trò (phân quyền, FR-14). */

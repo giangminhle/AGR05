@@ -85,6 +85,26 @@ public class BaoCaoDal extends DalCoSo implements IBaoCaoDal {
     }
 
     @Override
+    public List<BaoCaoHienTruong> timKiem(String trangThai, Integer maKhuVuc, String tuKhoa) {
+        MapSqlParameterSource p = thamSo();
+        StringBuilder dk = new StringBuilder("WHERE 1 = 1");
+        if (trangThai != null) {
+            dk.append(" AND b.MaTrangThai = :tt");
+            p.addValue("tt", trangThai);
+        }
+        if (maKhuVuc != null) {
+            dk.append(" AND b.MaKhuVuc = :kv");
+            p.addValue("kv", maKhuVuc);
+        }
+        if (tuKhoa != null && !tuKhoa.isBlank()) {
+            // Tham số có ký tự đại diện, không nối chuỗi người dùng vào câu SQL (SEC02)
+            dk.append(" AND (b.TieuDe LIKE :tk OR nd.HoTen LIKE :tk OR CAST(b.MaBaoCao AS VARCHAR(12)) = :ma)");
+            p.addValue("tk", "%" + tuKhoa.trim() + "%").addValue("ma", tuKhoa.trim());
+        }
+        return db.query("SELECT TOP 1000 * FROM (" + CHON + dk + ") t ORDER BY t.NgayGui DESC", p, MAP);
+    }
+
+    @Override
     public List<BaoCaoHienTruong> getByTrangThai(String trangThai, List<Integer> dsMaKhuVuc) {
         MapSqlParameterSource p = thamSo().addValue("tt", trangThai);
         String loc = locKhuVuc("b.MaKhuVuc", dsMaKhuVuc, p);

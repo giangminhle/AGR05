@@ -5,6 +5,7 @@ import { danhMucApi, thongKeApi } from '../api/index.js';
 import { TEN_MUC_NGUY_CO, TEN_TRANG_THAI, VaiTro } from '../hangSo.js';
 import { homNay, ngayGio, truNgay } from '../tienIch.js';
 import { usePhien } from '../components/PhienDangNhap.jsx';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
 import ONhap from '../components/ONhap.jsx';
 
 /** 6.2.7 Thống kê và cảnh báo (UC11). Chuyên gia chỉ chọn được khu vực mình phụ trách. */
@@ -45,6 +46,8 @@ export default function ThongKePage() {
 
   return (
     <>
+      <TieuDeTrang tieuDe="Thống kê và cảnh báo" quayLai={nguoiDung.vaiTro !== VaiTro.QUAN_TRI}
+        moTa="Số báo cáo, số ca đã xác minh, dự báo AI và cảnh báo dịch trong kỳ" />
       <Card className="mb-3">
         <Card.Body>
           <Form onSubmit={xem}>
@@ -82,7 +85,7 @@ export default function ThongKePage() {
         <Row>
           <Col lg={4}>
             <Card className="mb-3">
-              <Card.Header as="h6">Số báo cáo theo trạng thái</Card.Header>
+              <Card.Header>Số báo cáo theo trạng thái</Card.Header>
               <Table size="sm" className="mb-0">
                 <tbody>
                   {Object.entries(bang.theoTrangThai).map(([tt, so]) => (
@@ -93,7 +96,7 @@ export default function ThongKePage() {
               </Table>
             </Card>
             <Card className="mb-3">
-              <Card.Header as="h6">Dự báo AI theo mức</Card.Header>
+              <Card.Header>Dự báo AI theo mức</Card.Header>
               <Table size="sm" className="mb-0">
                 <tbody>
                   {Object.entries(bang.duBaoTheoMuc).map(([m, so]) => (
@@ -105,7 +108,7 @@ export default function ThongKePage() {
           </Col>
           <Col lg={8}>
             <Card className="mb-3">
-              <Card.Header as="h6">Số ca đã xác minh theo tuần</Card.Header>
+              <Card.Header>Số ca đã xác minh theo tuần</Card.Header>
               <Card.Body style={{ height: 280 }}>
                 {duLieuTuan.length === 0 ? <p className="text-muted">Không có ca nào trong kỳ.</p> : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -114,7 +117,7 @@ export default function ThongKePage() {
                       <XAxis dataKey="tuan" fontSize={11} />
                       <YAxis allowDecimals={false} />
                       <Tooltip formatter={(v) => [v, 'Số ca']} labelFormatter={(l) => 'Tuần bắt đầu ' + l} />
-                      <Bar dataKey="soCa" fill="#198754" />
+                      <Bar dataKey="soCa" fill="#4f8a5c" radius={[3, 3, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -123,10 +126,10 @@ export default function ThongKePage() {
           </Col>
           <Col lg={12}>
             <Card>
-              <Card.Header as="h6">Cảnh báo trong kỳ</Card.Header>
+              <Card.Header>Cảnh báo trong kỳ</Card.Header>
               <Card.Body className="p-0">
                 {bang.dsCanhBao.length === 0 ? <p className="text-muted p-3 mb-0">Không có cảnh báo.</p> : (
-                  <Table size="sm" className="mb-0">
+                  <Table size="sm" responsive className="mb-0">
                     <thead>
                       <tr><th>Ngày tạo</th><th>Khu vực</th><th>Loại</th><th>Nguồn</th><th>Nội dung</th></tr>
                     </thead>

@@ -5,6 +5,10 @@ import { baoCaoApi } from '../api/index.js';
 import { TEN_TRANG_THAI, TrangThai } from '../hangSo.js';
 import { ngayGio } from '../tienIch.js';
 import { TrangThaiBadge } from '../components/HuyHieu.jsx';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import ThongTin from '../components/ThongTin.jsx';
+import { usePhanTrang } from '../components/PhanTrang.jsx';
+import LinkBanDo from '../components/LinkBanDo.jsx';
 import BangLichSu from '../components/BangLichSu.jsx';
 import XemAnh from '../components/XemAnh.jsx';
 
@@ -13,6 +17,7 @@ export default function TheoDoiBaoCaoPage() {
   const [ds, setDs] = useState(null);
   const [loi, setLoi] = useState('');
   const [locTrangThai, setLocTrangThai] = useState('');
+  const [tim, setTim] = useState('');
   const [thamSo] = useSearchParams();
   const [chon, setChon] = useState(Number(thamSo.get('ma')) || null);
   const dieuHuong = useNavigate();
@@ -21,29 +26,39 @@ export default function TheoDoiBaoCaoPage() {
     baoCaoApi.layCuaToi().then(setDs).catch((e) => setLoi(e.loi));
   }, []);
 
+  const tk = tim.trim().toLowerCase();
+  const hien = (ds || []).filter((b) => (!locTrangThai || b.trangThai === locTrangThai)
+    && (!tk || b.tieuDe.toLowerCase().includes(tk) || String(b.maBaoCao) === tk));
+  const { dsTrang, dieuKhien } = usePhanTrang(hien, locTrangThai + '|' + tk);
+
   if (loi) return <Alert variant="danger">{loi}</Alert>;
   if (!ds) return <Spinner animation="border" />;
-
-  const hien = ds.filter((b) => !locTrangThai || b.trangThai === locTrangThai);
   const bc = ds.find((b) => b.maBaoCao === chon);
   const lyDoBacBo = bc && [...bc.dsLichSu].reverse().find((l) => l.trangThaiMoi === TrangThai.BI_BAC_BO);
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Báo cáo của tôi" moTa="Theo dõi trạng thái và kết quả xác minh các báo cáo bạn đã gửi" quayLai={false}>
+      <Button variant="success" onClick={() => dieuHuong('/bao-cao/moi')}>+ Gửi báo cáo mới</Button>
+    </TieuDeTrang>
     <Row>
       <Col lg={7}>
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Báo cáo của tôi</h5>
-            <Form.Select size="sm" style={{ width: 200 }} value={locTrangThai} onChange={(e) => setLocTrangThai(e.target.value)}>
+            <span className="fw-semibold">Danh sách báo cáo ({hien.length})</span>
+            <div className="d-flex gap-2">
+            <Form.Control size="sm" style={{ width: 180 }} placeholder="Tìm tiêu đề, mã..." value={tim} onChange={(e) => setTim(e.target.value)} />
+            <Form.Select size="sm" style={{ width: 170 }} value={locTrangThai} onChange={(e) => setLocTrangThai(e.target.value)}>
               <option value="">Tất cả trạng thái</option>
               {Object.keys(TEN_TRANG_THAI).map((k) => <option key={k} value={k}>{TEN_TRANG_THAI[k]}</option>)}
             </Form.Select>
+            </div>
           </Card.Header>
           <Card.Body className="p-0">
             {hien.length === 0 ? (
-              <p className="text-muted p-3 mb-0">Chưa có báo cáo nào.</p>
+              <p className="text-muted p-3 mb-0">Không có báo cáo phù hợp.</p>
             ) : (
-              <Table hover className="bang-chon mb-0" size="sm">
+              <Table hover responsive className="bang-chon mb-0" size="sm">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -55,7 +70,7 @@ export default function TheoDoiBaoCaoPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {hien.map((b) => (
+                  {dsTrang.map((b) => (
                     <tr key={b.maBaoCao} className={b.maBaoCao === chon ? 'dong-chon' : ''} onClick={() => setChon(b.maBaoCao)}>
                       <td>{b.maBaoCao}</td>
                       <td>{b.tieuDe}</td>
@@ -75,27 +90,34 @@ export default function TheoDoiBaoCaoPage() {
                 </tbody>
               </Table>
             )}
+            {dieuKhien}
           </Card.Body>
         </Card>
       </Col>
       <Col lg={5}>
         <Card>
-          <Card.Header as="h6">Kết quả</Card.Header>
+          <Card.Header>Kết quả</Card.Header>
           <Card.Body>
             {!bc ? (
               <p className="text-muted">Chọn một báo cáo để xem kết quả.</p>
             ) : (
               <>
-                <p className="mb-1"><b>{bc.tieuDe}</b> <TrangThaiBadge ma={bc.trangThai} /></p>
-                <p className="mb-1">Cây trồng: {bc.tenCayTrong} – Mức độ {bc.mucDo} – Tọa độ ({bc.viDo}, {bc.kinhDo})</p>
-                {bc.tenLoai && <p className="mb-1">Loại sâu bệnh: <b>{bc.tenLoai}</b></p>}
+                <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
+                  <span className="fw-semibold">{bc.tieuDe}</span>
+                  <TrangThaiBadge ma={bc.trangThai} />
+                </div>
+                <ThongTin dong={[
+                  ['Cây trồng', `${bc.tenCayTrong} · mức độ ${bc.mucDo}`],
+                  ['Tọa độ', <>{bc.viDo}, {bc.kinhDo}<LinkBanDo viDo={bc.viDo} kinhDo={bc.kinhDo} /></>],
+                  ['Loại sâu bệnh', bc.tenLoai && <b>{bc.tenLoai}</b>],
+                  ['Số lần gửi lại', `${bc.soLanGuiLai}/1`],
+                ]} />
                 {bc.khuyenNghi && <Alert variant="success" className="py-2">Khuyến nghị: {bc.khuyenNghi}</Alert>}
                 {bc.trangThai === TrangThai.BI_BAC_BO && lyDoBacBo && (
                   <Alert variant="danger" className="py-2">Lý do bác bỏ: {lyDoBacBo.ghiChu}</Alert>
                 )}
-                <p className="mb-1">Số lần gửi lại: {bc.soLanGuiLai}/1</p>
                 <XemAnh dsHinhAnh={bc.dsHinhAnh} />
-                <h6 className="mt-3">Lịch sử xử lý</h6>
+                <div className="tieu-de-muc">Lịch sử xử lý</div>
                 <BangLichSu ds={bc.dsLichSu} />
               </>
             )}
@@ -103,5 +125,6 @@ export default function TheoDoiBaoCaoPage() {
         </Card>
       </Col>
     </Row>
+    </>
   );
 }

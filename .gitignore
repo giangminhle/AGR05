@@ -13,3 +13,6 @@ frontend/.env.local
 .idea/
 .vscode/
 *.iml
+
+# Ban dong goi (dong-goi.bat): co application.yml that
+phat-hanh/

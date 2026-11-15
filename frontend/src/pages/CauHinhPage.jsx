@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Form, Table } from 'react-bootstrap';
 import { thamSoApi } from '../api/index.js';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 
 /** 6.2.9 Cấu hình hệ thống (UC16): cột Giá trị cho sửa, Lưu gọi PUT cho từng tham số đã sửa. */
@@ -42,11 +43,12 @@ export default function CauHinhPage() {
   }
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Cấu hình hệ thống" moTa="Sửa giá trị các tham số rồi bấm Lưu. Ngưỡng nguy cơ tính theo phần trăm (1–100)." />
     <Card>
-      <Card.Header as="h5">Cấu hình hệ thống</Card.Header>
       <Card.Body>
         {loiChung && <Alert variant="danger">{loiChung}</Alert>}
-        <Table bordered size="sm">
+        <Table bordered responsive size="sm">
           <thead><tr><th>Mã tham số</th><th>Mô tả</th><th style={{ width: 200 }}>Giá trị</th></tr></thead>
           <tbody>
             {ds.map((t) => (
@@ -67,5 +69,6 @@ export default function CauHinhPage() {
         </div>
       </Card.Body>
     </Card>
+    </>
   );
 }

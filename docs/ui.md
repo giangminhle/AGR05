@@ -21,6 +21,9 @@ Hệ thống có 12 màn hình (trang web). Mục 6.2 mô tả 10 màn hình; Da
 | 10 | Người dùng | NguoiDungPage | `/quan-tri/nguoi-dung` | Quản trị viên | UC15 |
 | 11 | Cấu hình hệ thống | CauHinhPage | `/quan-tri/cau-hinh` | Quản trị viên | UC16 |
 | 12 | Mô hình AI | MoHinhAIPage | `/quan-tri/mo-hinh-ai` | Quản trị viên | UC19 |
+| 13 | Đăng ký (thêm) | DangKyPage | `/dang-ky` | Nông dân chưa có tài khoản | Đăng ký |
+| 14 | Đổi mật khẩu (thêm) | DoiMatKhauPage | `/doi-mat-khau` | Tất cả | Đổi mật khẩu |
+| 15 | Tra cứu báo cáo (thêm) | QuanLyBaoCaoPage | `/quan-tri/bao-cao` | Quản trị viên | Tra cứu báo cáo |
 
 Quy ước chung: giao diện tiếng Việt, dùng Bootstrap 5; nhãn đặt phía trên ô nhập, nút chính ở góc dưới bên phải, ô bắt buộc có dấu (*). Khi API trả lỗi, ô sai có viền đỏ (`is-invalid`) kèm dòng báo lỗi bên dưới, trang không tải lại và không mất dữ liệu đã nhập. Thao tác thành công hiện thông báo nhỏ (toast). Trang chỉ hiện mục phù hợp với vai trò; truy cập đường dẫn không đúng vai trò thì chuyển về trang chính. Kiểm tra quyền thật do backend làm.
 

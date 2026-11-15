@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import { danhMucApi, nguoiDungApi } from '../api/index.js';
 import { VaiTro } from '../hangSo.js';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import { useXacNhan } from '../components/XacNhan.jsx';
 import ONhap from '../components/ONhap.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 
@@ -10,6 +12,7 @@ const RONG = { maKhuVuc: null, tenKhuVuc: '', moTa: '' };
 /** 6.2.8 Khu vực và phân công (UC14). */
 export default function KhuVucPage() {
   const hienToast = useThongBaoNho();
+  const xacNhan = useXacNhan();
   const [ds, setDs] = useState([]);
   const [form, setForm] = useState(RONG);
   const [dsChuyenGia, setDsChuyenGia] = useState([]);
@@ -62,7 +65,7 @@ export default function KhuVucPage() {
   }
 
   async function nutGoPhanCong(cg) {
-    if (!window.confirm(`Gỡ phân công ${cg.hoTen} khỏi khu vực này?`)) return;
+    if (!(await xacNhan({ tieuDe: 'Gỡ phân công', noiDung: `Gỡ phân công ${cg.hoTen} khỏi khu vực ${form.tenKhuVuc}?`, nutDongY: 'Gỡ phân công', mau: 'danger' }))) return;
     try {
       const kq = await danhMucApi.goPhanCong(form.maKhuVuc, cg.maNguoiDung);
       hienToast(kq.conChuyenGia ? 'Đã gỡ phân công.' : 'Đã gỡ. Khu vực không còn chuyên gia, hãy phân công người khác.',
@@ -77,11 +80,13 @@ export default function KhuVucPage() {
   const doi = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Khu vực và phân công" moTa="Quản lý khu vực canh tác và giao chuyên gia phụ trách. Khu vực chưa có chuyên gia hiện số 0 màu đỏ." />
     <Row>
       <Col lg={6}>
         <Card>
-          <Card.Header as="h5">Khu vực</Card.Header>
-          <Table hover size="sm" className="bang-chon mb-0">
+          <Card.Header>Danh sách khu vực ({ds.length})</Card.Header>
+          <Table hover responsive size="sm" className="bang-chon mb-0">
             <thead><tr><th>#</th><th>Tên khu vực</th><th>Mô tả</th><th className="text-end">Số chuyên gia</th></tr></thead>
             <tbody>
               {ds.map((k) => (
@@ -96,7 +101,7 @@ export default function KhuVucPage() {
       </Col>
       <Col lg={6}>
         <Card className="mb-3">
-          <Card.Header as="h6">{form.maKhuVuc ? `Sửa khu vực #${form.maKhuVuc}` : 'Thêm khu vực'}</Card.Header>
+          <Card.Header>{form.maKhuVuc ? `Sửa khu vực #${form.maKhuVuc}` : 'Thêm khu vực'}</Card.Header>
           <Card.Body>
             {loi && !loi.truong && <Alert variant="danger">{loi.loi}</Alert>}
             <Form onSubmit={luu}>
@@ -111,7 +116,7 @@ export default function KhuVucPage() {
         </Card>
         {form.maKhuVuc && (
           <Card>
-            <Card.Header as="h6">Chuyên gia phụ trách {form.tenKhuVuc}</Card.Header>
+            <Card.Header>Chuyên gia phụ trách {form.tenKhuVuc}</Card.Header>
             <Card.Body>
               <Table size="sm">
                 <tbody>
@@ -140,5 +145,6 @@ export default function KhuVucPage() {
         )}
       </Col>
     </Row>
+    </>
   );
 }

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import { danhMucApi } from '../api/index.js';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import { useXacNhan } from '../components/XacNhan.jsx';
+import { usePhanTrang } from '../components/PhanTrang.jsx';
 import ONhap from '../components/ONhap.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 
@@ -9,6 +12,7 @@ const RONG = { maLoai: null, tenLoai: '', trieuChung: '', bienPhapPhongTru: '' }
 /** UC13 Danh mục sâu bệnh: bảng bên trái, ô nhập và nút bên phải (bố cục như KhuVucPage). */
 export default function DanhMucSauBenhPage() {
   const hienToast = useThongBaoNho();
+  const xacNhan = useXacNhan();
   const [ds, setDs] = useState([]);
   const [tim, setTim] = useState('');
   const [form, setForm] = useState(RONG);
@@ -34,7 +38,7 @@ export default function DanhMucSauBenhPage() {
   }
 
   async function xoa() {
-    if (!window.confirm(`Xóa loại "${form.tenLoai}"?`)) return;
+    if (!(await xacNhan({ tieuDe: 'Xóa loại sâu bệnh', noiDung: `Xóa loại "${form.tenLoai}"? Thao tác này không hoàn tác được.`, nutDongY: 'Xóa', mau: 'danger' }))) return;
     setLoi(null);
     try {
       await danhMucApi.xoaLoai(form.maLoai);
@@ -47,30 +51,34 @@ export default function DanhMucSauBenhPage() {
   }
 
   const hien = ds.filter((l) => l.tenLoai.toLowerCase().includes(tim.toLowerCase()));
+  const { dsTrang, dieuKhien } = usePhanTrang(hien, tim);
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Danh mục sâu bệnh" moTa="Thêm, sửa, xóa loại sâu bệnh cùng triệu chứng và biện pháp phòng trừ" />
     <Row>
       <Col lg={7}>
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Danh mục sâu bệnh</h5>
+            <span className="fw-semibold">Danh sách ({hien.length})</span>
             <Form.Control size="sm" style={{ width: 220 }} placeholder="Tìm theo tên..." value={tim} onChange={(e) => setTim(e.target.value)} />
           </Card.Header>
-          <Table hover size="sm" className="bang-chon mb-0">
+          <Table hover responsive size="sm" className="bang-chon mb-0">
             <thead><tr><th>#</th><th>Tên loại</th><th>Triệu chứng</th></tr></thead>
             <tbody>
-              {hien.map((l) => (
+              {dsTrang.map((l) => (
                 <tr key={l.maLoai} className={form.maLoai === l.maLoai ? 'dong-chon' : ''} onClick={() => { setForm(l); setLoi(null); }}>
                   <td>{l.maLoai}</td><td>{l.tenLoai}</td><td className="small">{l.trieuChung}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
+          {dieuKhien}
         </Card>
       </Col>
       <Col lg={5}>
         <Card>
-          <Card.Header as="h6">{form.maLoai ? `Sửa loại #${form.maLoai}` : 'Thêm loại mới'}</Card.Header>
+          <Card.Header>{form.maLoai ? `Sửa loại #${form.maLoai}` : 'Thêm loại mới'}</Card.Header>
           <Card.Body>
             {loi && !loi.truong && <Alert variant="danger">{loi.loi}</Alert>}
             <Form onSubmit={luu}>
@@ -87,5 +95,6 @@ export default function DanhMucSauBenhPage() {
         </Card>
       </Col>
     </Row>
+    </>
   );
 }

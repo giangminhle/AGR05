@@ -61,6 +61,14 @@ public class XacMinhController {
         return Map.of("thanhCong", xacMinhService.tuChoi(ma, yc.lyDo(), appSession.layMa()));
     }
 
+    public record YeuCauDeNghiLoai(String tenLoai, String ghiChu) {
+    }
+
+    @PostMapping("/{ma}/de-nghi-loai")
+    public Map<String, Boolean> deNghiLoai(@PathVariable int ma, @RequestBody YeuCauDeNghiLoai yc) {
+        return Map.of("thanhCong", xacMinhService.deNghiThemLoai(ma, yc.tenLoai(), yc.ghiChu(), appSession.layMa()));
+    }
+
     @PostMapping("/{ma}/da-xu-ly")
     public Map<String, Boolean> daXuLy(@PathVariable int ma, @RequestBody YeuCauGhiChu yc) {
         return Map.of("thanhCong", xacMinhService.danhDauDaXuLy(ma, yc.ghiChu(), appSession.layMa()));

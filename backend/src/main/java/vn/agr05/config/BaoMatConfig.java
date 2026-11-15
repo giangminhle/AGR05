@@ -37,7 +37,8 @@ public class BaoMatConfig {
             .logout(AbstractHttpConfigurer::disable)
             .securityContext(c -> c.securityContextRepository(repo))
             .authorizeHttpRequests(a -> a
-                .requestMatchers(HttpMethod.POST, "/api/auth/dang-nhap").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/dang-nhap", "/api/auth/dang-ky").permitAll()
+                .requestMatchers("/api/quan-tri/**").hasRole(QUAN_TRI)
                 .requestMatchers("/api/bao-cao/**").hasRole(NONG_DAN)
                 .requestMatchers("/api/xac-minh/**").hasRole(CHUYEN_GIA)
                 .requestMatchers("/api/thong-ke/**").hasAnyRole(CHUYEN_GIA, QUAN_TRI)

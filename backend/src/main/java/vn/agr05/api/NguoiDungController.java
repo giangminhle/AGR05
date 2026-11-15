@@ -58,6 +58,14 @@ public class NguoiDungController {
         return Map.of("thanhCong", accountService.capNhat(nd));
     }
 
+    public record YeuCauDatLaiMatKhau(String matKhauMoi) {
+    }
+
+    @PostMapping("/{ma}/dat-lai-mat-khau")
+    public Map<String, Boolean> datLaiMatKhau(@PathVariable int ma, @RequestBody YeuCauDatLaiMatKhau yc) {
+        return Map.of("thanhCong", accountService.datLaiMatKhau(ma, yc.matKhauMoi()));
+    }
+
     @PostMapping("/{ma}/khoa")
     public Map<String, Object> khoa(@PathVariable int ma, @RequestBody YeuCauKhoa yc) {
         Map<String, Object> kq = new HashMap<>();

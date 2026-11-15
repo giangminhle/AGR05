@@ -85,13 +85,15 @@ Quy trình: Trang MoHinhAIPage gọi API huấn luyện. AIService lấy dữ li
 
 ## Phụ lục A: danh sách REST API
 
-Mọi API nằm dưới `/api`, trả JSON. Cột "Vai trò" là vai trò được phép gọi (Spring Security kiểm tra); quyền chi tiết (khu vực, chủ báo cáo) do Service kiểm tra.
+Mọi API nằm dưới `/api`, trả JSON. Dòng ghi "(thêm)" là chức năng bổ sung khi code, xem `docs/thay-doi-so-voi-bao-cao.md`. Cột "Vai trò" là vai trò được phép gọi (Spring Security kiểm tra); quyền chi tiết (khu vực, chủ báo cáo) do Service kiểm tra.
 
 | Phương thức, đường dẫn | Gọi Service | Vai trò | Use case |
 |---|---|---|---|
 | `POST /api/auth/dang-nhap` | AccountService.dangNhap | Mọi người | UC01 |
 | `POST /api/auth/dang-xuat` | (hủy phiên) | Đã đăng nhập | UC01 |
 | `GET /api/auth/toi` | AppSession | Đã đăng nhập | UC01 |
+| `POST /api/auth/dang-ky` | AccountService.dangKy | Mọi người | (thêm) Đăng ký |
+| `POST /api/auth/doi-mat-khau` | AccountService.doiMatKhau | Đã đăng nhập | (thêm) Đổi mật khẩu |
 | `GET /api/khu-vuc` | DanhMucService | Đã đăng nhập | UC02, UC14 |
 | `POST /api/bao-cao` (multipart) | BaoCaoService.guiBaoCao | NONG_DAN | UC02 |
 | `GET /api/bao-cao/cua-toi` | BaoCaoService.layCuaToi | NONG_DAN | UC04 |
@@ -101,6 +103,7 @@ Mọi API nằm dưới `/api`, trả JSON. Cột "Vai trò" là vai trò đư�
 | `GET /api/xac-minh/da-xac-minh` | XacMinhService.layDaXacMinh | CHUYEN_GIA | UC10 |
 | `GET /api/xac-minh/{ma}` | XacMinhService.layChiTiet | CHUYEN_GIA | UC06 |
 | `POST /api/xac-minh/{ma}/duyet` | XacMinhService.xacMinh | CHUYEN_GIA | UC07, UC09, UC18 |
+| `POST /api/xac-minh/{ma}/de-nghi-loai` | XacMinhService.deNghiThemLoai | CHUYEN_GIA | UC07 (loại chưa có trong danh mục) |
 | `POST /api/xac-minh/{ma}/tu-choi` | XacMinhService.tuChoi | CHUYEN_GIA | UC08 |
 | `POST /api/xac-minh/{ma}/da-xu-ly` | XacMinhService.danhDauDaXuLy | CHUYEN_GIA | UC10 |
 | `GET /api/anh/{maHinhAnh}` | BaoCaoService.layAnh (kiểm tra quyền xem) | Đã đăng nhập | UC04, UC06 |
@@ -117,6 +120,8 @@ Mọi API nằm dưới `/api`, trả JSON. Cột "Vai trò" là vai trò đư�
 | `GET, POST /api/nguoi-dung` | AccountService.taoTaiKhoan | QUAN_TRI | UC15 |
 | `PUT /api/nguoi-dung/{ma}` | AccountService.capNhat (họ tên, điện thoại, vai trò) | QUAN_TRI | UC15 |
 | `POST /api/nguoi-dung/{ma}/khoa` | AccountService.khoaTaiKhoan | QUAN_TRI | UC15 |
+| `POST /api/nguoi-dung/{ma}/dat-lai-mat-khau` | AccountService.datLaiMatKhau | QUAN_TRI | UC15 |
+| `GET /api/quan-tri/bao-cao`, `GET /api/quan-tri/bao-cao/{ma}` | BaoCaoService.timKiemQuanTri, layChiTietQuanTri | QUAN_TRI | (thêm) Tra cứu báo cáo |
 | `GET /api/tham-so`, `PUT /api/tham-so/{ma}` | ThamSoService.capNhat | QUAN_TRI | UC16 |
 | `GET /api/mo-hinh-ai` | MoHinhAIDal qua AIService | QUAN_TRI | UC19 |
 | `POST /api/mo-hinh-ai/huan-luyen` | AIService.huanLuyenLai | QUAN_TRI | UC19 |

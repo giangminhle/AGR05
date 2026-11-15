@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { baoCaoApi, danhMucApi, urlAnh } from '../api/index.js';
 import { TOI_DA_ANH, TOI_DA_BYTE_ANH, TrangThai } from '../hangSo.js';
 import { homNay } from '../tienIch.js';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import LinkBanDo from '../components/LinkBanDo.jsx';
 import ONhap from '../components/ONhap.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 
@@ -25,6 +27,28 @@ export default function BaoCaoHienTruongPage() {
   const [dangTai, setDangTai] = useState(laSua);
   const [dangGui, setDangGui] = useState(false);
   const [hoiHuy, setHoiHuy] = useState(false);
+  const [dangDinhVi, setDangDinhVi] = useState(false);
+
+  /** Lấy tọa độ hiện tại từ GPS / trình duyệt để nông dân không phải tự gõ. */
+  function layViTri() {
+    if (!navigator.geolocation) {
+      setLoi({ loi: 'Trình duyệt không hỗ trợ lấy vị trí, hãy nhập tọa độ bằng tay.', truong: 'viDo' });
+      return;
+    }
+    setDangDinhVi(true);
+    navigator.geolocation.getCurrentPosition(
+      (vt) => {
+        setForm((f) => ({ ...f, viDo: vt.coords.latitude.toFixed(6), kinhDo: vt.coords.longitude.toFixed(6) }));
+        setLoi(null);
+        setDangDinhVi(false);
+      },
+      () => {
+        setLoi({ loi: 'Không lấy được vị trí (chưa cho phép định vị?). Hãy nhập tọa độ bằng tay.', truong: 'viDo' });
+        setDangDinhVi(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  }
 
   useEffect(() => {
     danhMucApi.layKhuVuc().then(setDsKhuVuc).catch((e) => setLoi(e));
@@ -110,14 +134,25 @@ export default function BaoCaoHienTruongPage() {
   }
 
   if (dangTai) return <Spinner animation="border" />;
+  if (laSua && loi && !trangThaiCu) {
+    return (
+      <>
+        <TieuDeTrang tieuDe={`Sửa báo cáo #${ma}`} />
+        <Alert variant="warning">{loi.loi}</Alert>
+      </>
+    );
+  }
 
   const coLoiChung = loi && (!loi.truong || !Object.keys(RONG).includes(loi.truong)) && loi.truong !== 'anh';
 
+  const tieuDeTrang = laSua ? (trangThaiCu === TrangThai.BI_BAC_BO ? `Gửi lại báo cáo #${ma}` : `Sửa báo cáo #${ma}`)
+    : 'Gửi báo cáo hiện trường';
+
   return (
+    <>
+    <TieuDeTrang tieuDe={tieuDeTrang}
+      moTa={laSua ? 'Sửa thông tin, thêm hoặc bỏ ảnh rồi bấm Lưu' : 'Nhập thông tin, chọn 1 đến 5 ảnh và tọa độ nơi phát hiện'} />
     <Card>
-      <Card.Header as="h5">
-        {laSua ? (trangThaiCu === TrangThai.BI_BAC_BO ? `Gửi lại báo cáo #${ma}` : `Sửa báo cáo #${ma}`) : 'Gửi báo cáo hiện trường'}
-      </Card.Header>
       <Card.Body>
         {coLoiChung && <Alert variant="danger">{loi.loi}</Alert>}
         <Form onSubmit={nutGui} noValidate>
@@ -151,6 +186,12 @@ export default function BaoCaoHienTruongPage() {
             </Col>
             <Col md={4}>
               <ONhap ten="ngayPhatHien" nhan="Ngày phát hiện" batBuoc loi={loi} type="date" max={homNay()} value={form.ngayPhatHien} onChange={doi} />
+            </Col>
+            <Col md={12} className="mb-2">
+              <Button size="sm" variant="outline-success" onClick={layViTri} disabled={dangDinhVi}>
+                {dangDinhVi && <Spinner size="sm" className="me-2" />}Lấy vị trí hiện tại
+              </Button>
+              {form.viDo && form.kinhDo && <LinkBanDo viDo={form.viDo} kinhDo={form.kinhDo} />}
             </Col>
             <Col md={6}>
               <ONhap ten="viDo" nhan="Vĩ độ (-90..90)" batBuoc loi={loi} type="number" step="0.000001" min={-90} max={90} value={form.viDo} onChange={doi} />
@@ -201,5 +242,6 @@ export default function BaoCaoHienTruongPage() {
         </Modal.Footer>
       </Modal>
     </Card>
+    </>
   );
 }

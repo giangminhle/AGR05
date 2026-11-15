@@ -222,6 +222,13 @@ public class FakeDb {
             return true;
         }
 
+        public boolean updateMatKhau(int m, String hash, String muoi) {
+            NguoiDung nd = getById(m);
+            nd.setMatKhauHash(hash);
+            nd.setMuoi(muoi);
+            return true;
+        }
+
         public List<Integer> getKhuVucPhuTrach(int m) {
             return phanCong.stream().filter(p -> p[0] == m).map(p -> p[1]).toList();
         }
@@ -325,6 +332,12 @@ public class FakeDb {
 
         public List<BaoCaoHienTruong> getByNguoiGui(int m) {
             return baoCao.stream().filter(b -> b.getMaNguoiGui() == m).map(FakeDb::sao).toList();
+        }
+
+        public List<BaoCaoHienTruong> timKiem(String tt, Integer kv, String tk) {
+            return baoCao.stream().filter(b -> (tt == null || b.getTrangThai().equals(tt))
+                    && (kv == null || b.getMaKhuVuc() == kv)
+                    && (tk == null || b.getTieuDe().contains(tk))).map(FakeDb::sao).toList();
         }
 
         public List<BaoCaoHienTruong> getByTrangThai(String tt, List<Integer> ds) {

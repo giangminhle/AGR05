@@ -15,6 +15,9 @@ public interface IBaoCaoDal {
 
     List<BaoCaoHienTruong> getByNguoiGui(int maNguoiGui);
 
+    /** Tìm báo cáo cho Quản trị viên (mỗi điều kiện null là bỏ qua), mới nhất trước, tối đa 1000 dòng. */
+    List<BaoCaoHienTruong> timKiem(String trangThai, Integer maKhuVuc, String tuKhoa);
+
     /** Báo cáo theo trạng thái trong các khu vực (null = mọi khu vực). */
     List<BaoCaoHienTruong> getByTrangThai(String trangThai, List<Integer> dsMaKhuVuc);
 

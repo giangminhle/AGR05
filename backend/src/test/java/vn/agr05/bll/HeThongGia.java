@@ -28,8 +28,8 @@ class HeThongGia {
         anh = new AnhStorage(thuMucTam.resolve("anh"));
         ai = new AIService(db.moHinhDal, db.duBaoDal, db.baoCaoDal, thamSo, canhBao, txm.template(), hocMay,
                 thuMucTam.resolve("mo-hinh"));
-        baoCao = new BaoCaoService(db.baoCaoDal, db.hinhAnhDal, db.lichSuDal, db.nguoiDungDal, db.khuVucDal, thongBao,
-                thamSo, anh, txm.template());
+        baoCao = new BaoCaoService(db.baoCaoDal, db.hinhAnhDal, db.lichSuDal, db.nguoiDungDal, db.khuVucDal, db.duBaoDal,
+                thongBao, thamSo, anh, txm.template());
         xacMinh = new XacMinhService(db.baoCaoDal, db.hinhAnhDal, db.lichSuDal, db.nguoiDungDal, db.loaiDal, thongBao,
                 canhBao, thamSo, ai, txm.template());
         hanXuLy = new HanXuLyService(db.baoCaoDal, db.lichSuDal, db.nguoiDungDal, thongBao, thamSo, txm.template());

@@ -54,6 +54,27 @@ public class AuthController {
         return NguoiDungDto.tu(nd, appSession.getDsMaKhuVuc());
     }
 
+    public record YeuCauDangKy(String tenDangNhap, String matKhau, String hoTen, String dienThoai) {
+    }
+
+    public record YeuCauDoiMatKhau(String matKhauCu, String matKhauMoi) {
+    }
+
+    /** Nông dân tự đăng ký tài khoản (vai trò luôn là Nông dân). */
+    @PostMapping("/dang-ky")
+    public java.util.Map<String, Integer> dangKy(@RequestBody YeuCauDangKy yc) {
+        NguoiDung nd = new NguoiDung();
+        nd.setTenDangNhap(yc.tenDangNhap());
+        nd.setHoTen(yc.hoTen());
+        nd.setDienThoai(yc.dienThoai());
+        return java.util.Map.of("maNguoiDung", accountService.dangKy(nd, yc.matKhau()));
+    }
+
+    @PostMapping("/doi-mat-khau")
+    public java.util.Map<String, Boolean> doiMatKhau(@RequestBody YeuCauDoiMatKhau yc) {
+        return java.util.Map.of("thanhCong", accountService.doiMatKhau(appSession.layMa(), yc.matKhauCu(), yc.matKhauMoi()));
+    }
+
     @PostMapping("/dang-xuat")
     public ResponseEntity<Void> dangXuat(HttpServletRequest req) {
         appSession.xoa();

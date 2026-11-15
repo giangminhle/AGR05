@@ -26,8 +26,16 @@ Tên server có thể khác `.` (ví dụ `.\SQLEXPRESS`); xem tên server trong
 2. Backend: `cd backend` rồi `mvn spring-boot:run`. Lần đầu chạy, log in ra tài khoản `admin` và mật khẩu ngẫu nhiên (chỉ in một lần).
 3. Frontend: `cd frontend`, `npm install`, `npm run dev`, mở http://localhost:5173.
 4. Nếu cổng 8080 bị chiếm (ví dụ VMware dùng): đặt `server.port: 8081` trong `application.yml` và tạo `frontend/.env.local` chứa `AGR05_API=http://localhost:8081`.
-5. Dữ liệu giả để thử AI: `mvn spring-boot:run -Dspring-boot.run.profiles=demo` (chạy sau `db/seed_demo.sql`). Tạo khoảng 550 báo cáo "[DỮ LIỆU GIẢ]" và 4 tài khoản demo (`nongdan_demo`, `nongdan_demo2`, `chuyengia_demo`, `chuyengia_demo2`, mật khẩu `Demo@123`). Số liệu này chỉ để chạy thử, không dùng cho báo cáo.
-6. Test: `cd backend && mvn verify` (62 test, không cần CSDL). Test tích hợp: đặt biến `AGR05_TEST_DB` là chuỗi JDBC đầy đủ rồi chạy `mvn verify -Pintegration`.
+5. Dữ liệu mẫu: `mvn spring-boot:run -Dspring-boot.run.profiles=demo` (chạy sau `db/seed_demo.sql`). Tạo 7 tài khoản (`qt.minhkhoa`, `cg.thanhtam`, `cg.ngocanh`, `nd.vanbay`, `nd.thimai`, `nd.vantu`, `nd.vanut`, mật khẩu `Agr05@2026`), khoảng 880 báo cáo lịch sử có ảnh thật để huấn luyện AI, tình huống demo và mô hình AI đầu tiên. Số liệu lịch sử là mô phỏng, không dùng làm kết quả cho báo cáo. Làm mới: `db/lam_moi_du_lieu_mau.sql`.
+6. Test: `cd backend && mvn verify` (70 test, không cần CSDL). Test tích hợp: đặt biến `AGR05_TEST_DB` là chuỗi JDBC đầy đủ rồi chạy `mvn verify -Pintegration`.
+
+## 2c. Bản đóng gói chạy một lệnh (dùng khi demo)
+
+1. Chạy `dong-goi.bat`: build giao diện, chạy test, đóng gói API + giao diện vào `phat-hanh\agr05.jar`, kèm `application.yml` và `chay.bat`.
+2. Chạy `phat-hanh\chay.bat`, mở http://localhost:8081 (cổng lấy từ `phat-hanh\application.yml`).
+3. Kịch bản demo từng bước, tài khoản demo, cách làm mới dữ liệu demo: `docs/kich-ban-demo.md`.
+4. Bảng kết quả TC01–TC16 cho mục 7.2: `docs/ket-qua-kiem-thu.md` (xuất lại bằng `python cong-cu/xuat_ket_qua_kiem_thu.py` sau `mvn verify`).
+5. Mọi chỗ code khác hoặc thêm so với báo cáo Word: `docs/thay-doi-so-voi-bao-cao.md`.
 
 ## 3. Làm việc với Claude Code
 

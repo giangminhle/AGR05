@@ -72,6 +72,12 @@ public class NguoiDungDal extends DalCoSo implements INguoiDungDal {
     }
 
     @Override
+    public boolean updateMatKhau(int maNguoiDung, String matKhauHash, String muoi) {
+        return db.update("UPDATE NguoiDung SET MatKhauHash = :hash, Muoi = :muoi WHERE MaNguoiDung = :ma",
+                thamSo().addValue("hash", matKhauHash).addValue("muoi", muoi).addValue("ma", maNguoiDung)) > 0;
+    }
+
+    @Override
     public List<Integer> getKhuVucPhuTrach(int maNguoiDung) {
         return db.queryForList("SELECT MaKhuVuc FROM PhanCongKhuVuc WHERE MaNguoiDung = :ma ORDER BY MaKhuVuc",
                 thamSo().addValue("ma", maNguoiDung), Integer.class);

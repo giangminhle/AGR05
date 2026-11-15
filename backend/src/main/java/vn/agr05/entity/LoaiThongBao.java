@@ -8,6 +8,8 @@ public final class LoaiThongBao {
     public static final String QUA_HAN = "QUA_HAN";
     public static final String DONG_HO_SO = "DONG_HO_SO";
     public static final String CANH_BAO_DICH = "CANH_BAO_DICH";
+    /** Chuyên gia đề nghị thêm loại sâu bệnh vào danh mục; Quản trị viên đã thêm loại mới. */
+    public static final String DANH_MUC = "DANH_MUC";
 
     private LoaiThongBao() {
     }

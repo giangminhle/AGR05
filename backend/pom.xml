@@ -66,7 +66,29 @@
     </dependencies>
 
     <build>
+        <finalName>agr05</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Giao diện React đã build (npm run build) được chép vào jar, phục vụ cùng cổng với API.
+                 Chưa build frontend thì Maven bỏ qua thư mục này. -->
+            <resource>
+                <directory>../frontend/dist</directory>
+                <targetPath>static</targetPath>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <!-- Không đóng gói file cấu hình có mật khẩu; khi chạy jar, đặt application.yml cạnh file jar -->
+                    <excludes>
+                        <exclude>application.yml</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -81,6 +103,8 @@
                 <configuration>
                     <excludedGroups>${test.loai.bo.qua}</excludedGroups>
                     <argLine>-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8</argLine>
+                    <!-- Log của test (kể cả lỗi giả lập có chủ ý) ghi vào target/surefire-reports, không in ra màn hình -->
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

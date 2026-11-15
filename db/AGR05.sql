@@ -1,7 +1,7 @@
 /* =====================================================
    AGR-05: Quản lý cảnh báo sâu bệnh dựa trên báo cáo hiện trường có xác minh
    Script T-SQL cho SQL Server. 15 bảng, 87 cột.
-   Tài khoản người dùng KHÔNG tạo ở đây: mật khẩu phải băm PBKDF2 trong C#,
+   Tài khoản người dùng KHÔNG tạo ở đây: mật khẩu phải băm PBKDF2 trong ứng dụng Java (lớp MatKhau),
    nên tài khoản quản trị đầu tiên do DbSeeder tạo khi chạy ứng dụng lần đầu.
    ===================================================== */
 -- 1. TẠO CSDL --------------------------------------------------
@@ -286,7 +286,8 @@ INSERT INTO LoaiThongBao (MaLoaiTB, TenLoaiTB) VALUES
     ('KET_QUA_XAC_MINH', N'Kết quả xác minh'),
     ('QUA_HAN',          N'Báo cáo quá hạn'),
     ('DONG_HO_SO',       N'Đóng hồ sơ'),
-    ('CANH_BAO_DICH',    N'Cảnh báo dịch hại');
+    ('CANH_BAO_DICH',    N'Cảnh báo dịch hại'),
+    ('DANH_MUC',         N'Danh mục sâu bệnh');
 
 INSERT INTO ThamSoHeThong (MaThamSo, GiaTri, MoTa) VALUES
     ('HAN_XAC_MINH_GIO',   48, N'Số giờ chuyên gia phải xử lý báo cáo (BR02)'),

@@ -28,6 +28,10 @@ public class BaoCaoDalUyQuyen implements IBaoCaoDal {
         return goc.getByNguoiGui(m);
     }
 
+    public List<BaoCaoHienTruong> timKiem(String tt, Integer kv, String tk) {
+        return goc.timKiem(tt, kv, tk);
+    }
+
     public List<BaoCaoHienTruong> getByTrangThai(String tt, List<Integer> ds) {
         return goc.getByTrangThai(tt, ds);
     }

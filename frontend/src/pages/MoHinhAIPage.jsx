@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Col, Row, Spinner, Table } from 'react-bootstrap';
 import { moHinhApi } from '../api/index.js';
 import { ngayGio } from '../tienIch.js';
+import TieuDeTrang from '../components/TieuDeTrang.jsx';
+import { useXacNhan } from '../components/XacNhan.jsx';
 import { useThongBaoNho } from '../components/ThongBaoNho.jsx';
 
 /** 6.2.10 Mô hình AI (UC19): bản đang dùng, huấn luyện lại, bảng phiên bản, kích hoạt. */
 export default function MoHinhAIPage() {
   const hienToast = useThongBaoNho();
+  const xacNhan = useXacNhan();
   const [du, setDu] = useState(null);
   const [chon, setChon] = useState(null);
   const [tienTrinh, setTienTrinh] = useState('');
@@ -34,6 +37,9 @@ export default function MoHinhAIPage() {
   }
 
   async function nutKichHoat() {
+    const mh = du.dsPhienBan.find((m) => m.maMoHinh === chon);
+    const ok = await xacNhan({ tieuDe: 'Kích hoạt mô hình', noiDung: `Dùng phiên bản ${mh?.phienBan} để dự báo từ nay? Bản mới chỉ được kích hoạt khi F1 không thấp hơn bản đang dùng.`, nutDongY: 'Kích hoạt' });
+    if (!ok) return;
     setLoi('');
     try {
       await moHinhApi.kichHoat(chon);
@@ -49,10 +55,12 @@ export default function MoHinhAIPage() {
   const phanTram = (x) => (x * 100).toFixed(1) + '%';
 
   return (
+    <>
+    <TieuDeTrang tieuDe="Mô hình AI dự báo nguy cơ" moTa="Huấn luyện lại trên báo cáo đã xác minh, so sánh chỉ số rồi kích hoạt phiên bản tốt hơn" />
     <Row>
       <Col lg={4}>
         <Card className="mb-3">
-          <Card.Header as="h6">Phiên bản đang dùng</Card.Header>
+          <Card.Header>Phiên bản đang dùng</Card.Header>
           <Card.Body>
             {dd ? (
               <>
@@ -78,10 +86,10 @@ export default function MoHinhAIPage() {
       <Col lg={8}>
         {loi && <Alert variant="danger">{loi}</Alert>}
         <Card>
-          <Card.Header as="h6">Các phiên bản</Card.Header>
+          <Card.Header>Các phiên bản</Card.Header>
           <Card.Body className="p-0">
             {du.dsPhienBan.length === 0 ? <p className="text-muted p-3 mb-0">Chưa có phiên bản nào.</p> : (
-              <Table hover size="sm" className="bang-chon mb-0">
+              <Table hover responsive size="sm" className="bang-chon mb-0">
                 <thead>
                   <tr><th>Phiên bản</th><th>Ngày huấn luyện</th><th>Số mẫu</th><th>Accuracy</th><th>F1</th><th>AUC</th><th /></tr>
                 </thead>
@@ -109,5 +117,6 @@ export default function MoHinhAIPage() {
         </Card>
       </Col>
     </Row>
+    </>
   );
 }

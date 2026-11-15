@@ -17,6 +17,9 @@ public interface INguoiDungDal {
 
     boolean updateBiKhoa(int maNguoiDung, boolean khoa);
 
+    /** Ghi mật khẩu mới (đã băm) và muối mới. */
+    boolean updateMatKhau(int maNguoiDung, String matKhauHash, String muoi);
+
     /** Mã các khu vực chuyên gia phụ trách (PhanCongKhuVuc). */
     List<Integer> getKhuVucPhuTrach(int maNguoiDung);
 

@@ -143,6 +143,20 @@ class BaoCaoServiceTest {
     }
 
     @Test
+    void quanTri_timKiemVaXemChiTiet() {
+        BaoCaoHienTruong a = ht.db.themBaoCao(nongDan.getMaNguoiDung(), maKV, TrangThai.CHO_XAC_MINH);
+        a.setNgayVaoTrangThai(java.time.LocalDateTime.now().minusHours(50));
+        ht.db.themBaoCao(nongDan.getMaNguoiDung(), maKV, TrangThai.DA_XAC_MINH);
+
+        assertThat(ht.baoCao.timKiemQuanTri("", null, null)).hasSize(2);
+        assertThat(ht.baoCao.timKiemQuanTri(TrangThai.CHO_XAC_MINH, maKV, " ")).singleElement()
+                .satisfies(b -> assertThat(b.isQuaHan()).isTrue());
+        BaoCaoHienTruong ct = ht.baoCao.layChiTietQuanTri(a.getMaBaoCao());
+        assertThat(ct.getDsHinhAnh()).hasSize(1);
+        assertThatThrownBy(() -> ht.baoCao.layChiTietQuanTri(99999)).isInstanceOf(NghiepVuException.class);
+    }
+
+    @Test
     void layDeSua_baoCaoNguoiKhac_khongDuQuyen() {
         NguoiDung khac = ht.db.themNguoiDung("nd2", VaiTro.NONG_DAN, "123456");
         BaoCaoHienTruong bc = ht.db.themBaoCao(khac.getMaNguoiDung(), maKV, TrangThai.CHO_XAC_MINH);
@@ -159,7 +173,7 @@ class BaoCaoServiceTest {
         // Giả lập chuyên gia duyệt trong lúc nông dân đang sửa: layDeSua thấy Chờ, nhưng UPDATE thì trạng thái đã khác
         IBaoCaoDalChen chen = new IBaoCaoDalChen(ht, bc.getMaBaoCao());
         BaoCaoService sv = new BaoCaoService(chen, ht.db.hinhAnhDal, ht.db.lichSuDal, ht.db.nguoiDungDal,
-                ht.db.khuVucDal, ht.thongBao, ht.thamSo, ht.anh, ht.txm.template());
+                ht.db.khuVucDal, ht.db.duBaoDal, ht.thongBao, ht.thamSo, ht.anh, ht.txm.template());
         assertThatThrownBy(() -> sv.guiLai(moi, List.of(), List.of())).hasMessageContaining("đã được xử lý");
         assertThat(ht.txm.soRollback).isEqualTo(1);
     }
