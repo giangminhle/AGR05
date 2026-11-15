@@ -47,7 +47,7 @@ public class DbSeeder implements ApplicationRunner {
         }
     }
 
-    private static String taoMatKhau() {
+    static String taoMatKhau() {
         SecureRandom r = new SecureRandom();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 12; i++) {

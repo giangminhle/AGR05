@@ -16,6 +16,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
@@ -57,7 +58,6 @@ import vn.agr05.entity.VaiTro;
 @Order(2)
 public class DuLieuMau implements ApplicationRunner {
 
-    static final String MAT_KHAU = "Agr05@2026";
     static final String KHU_VUC_CHINH = "Xã Thới Thạnh - Cánh đồng lớn";
     private static final Logger LOG = LoggerFactory.getLogger(DuLieuMau.class);
     private static final int SO_NGAY = 240;
@@ -114,13 +114,17 @@ public class DuLieuMau implements ApplicationRunner {
     private final AnhStorage anhStorage;
     private final AIService aiService;
     private final TransactionTemplate tx;
+    /** Mật khẩu chung của tài khoản mẫu: agr05.mat-khau-mau (hoặc biến môi trường AGR05_MAT_KHAU_MAU); trống thì sinh ngẫu nhiên. */
+    private final String matKhauMau;
     private final Random r = new Random(2026);
     /** Tên file ảnh mẫu → đường dẫn đã lưu (mỗi ảnh lưu một lần, nhiều báo cáo lịch sử dùng chung). */
     private final Map<String, String> anhDaLuu = new HashMap<>();
 
     public DuLieuMau(INguoiDungDal nguoiDungDal, IKhuVucDal khuVucDal, ILoaiSauBenhDal loaiSauBenhDal,
                      IBaoCaoDal baoCaoDal, IHinhAnhDal hinhAnhDal, ILichSuDal lichSuDal,
-                     ThongBaoService thongBaoService, AnhStorage anhStorage, AIService aiService, TransactionTemplate tx) {
+                     ThongBaoService thongBaoService, AnhStorage anhStorage, AIService aiService, TransactionTemplate tx,
+                     @Value("${agr05.mat-khau-mau:}") String matKhauMau) {
+        this.matKhauMau = matKhauMau == null || matKhauMau.isBlank() ? DbSeeder.taoMatKhau() : matKhauMau;
         this.nguoiDungDal = nguoiDungDal;
         this.khuVucDal = khuVucDal;
         this.loaiSauBenhDal = loaiSauBenhDal;
@@ -186,7 +190,7 @@ public class DuLieuMau implements ApplicationRunner {
 
         LOG.warn("=== Đã tạo dữ liệu mẫu: {} báo cáo lịch sử (MÔ PHỎNG) và tình huống hiện tại ở \"{}\". "
                 + "Tài khoản: qt.minhkhoa, cg.thanhtam, cg.ngocanh, nd.vanbay, nd.thimai, nd.vantu, nd.vanut; mật khẩu {} ===",
-                soLichSu, KHU_VUC_CHINH, MAT_KHAU);
+                soLichSu, KHU_VUC_CHINH, matKhauMau);
     }
 
     // ---------------------------------------------------------------- lịch sử để huấn luyện AI
@@ -350,7 +354,7 @@ public class DuLieuMau implements ApplicationRunner {
         nd.setDienThoai(dienThoai);
         nd.setVaiTro(vaiTro);
         nd.setMuoi(MatKhau.taoMuoi());
-        nd.setMatKhauHash(MatKhau.bam(MAT_KHAU, nd.getMuoi()));
+        nd.setMatKhauHash(MatKhau.bam(matKhauMau, nd.getMuoi()));
         return nguoiDungDal.insert(nd);
     }
 

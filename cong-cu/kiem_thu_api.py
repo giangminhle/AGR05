@@ -9,7 +9,7 @@ Cách dùng:  python cong-cu/kiem_thu_api.py [http://localhost:8081]
 import os, sys, time, requests
 sys.stdout.reconfigure(encoding='utf-8')
 B = (sys.argv[1] if len(sys.argv) > 1 else 'http://localhost:8081').rstrip('/') + '/api'
-MK = 'Agr05@2026'
+MK = os.environ.get('AGR05_MAT_KHAU_MAU') or sys.exit('Đặt biến môi trường AGR05_MAT_KHAU_MAU = mật khẩu tài khoản mẫu')
 ANH = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'backend', 'src', 'main', 'resources', 'anh-mau', 'cuon-la-1.jpg'), 'rb').read()
 loi = []
 

@@ -30,3 +30,6 @@ agr05:
   thu-muc-mo-hinh: du-lieu/mo-hinh
   # false để tắt chức năng nền 60 giây (HanXuLyScheduler)
   lich-nen: true
+  # Mật khẩu chung cho tài khoản mẫu (profile demo). Để trống thì sinh ngẫu nhiên và in ra log.
+  # Có thể đặt bằng biến môi trường AGR05_MAT_KHAU_MAU thay vì ghi vào file.
+  mat-khau-mau: ${AGR05_MAT_KHAU_MAU:}
