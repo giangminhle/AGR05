@@ -27,7 +27,7 @@ Tên server có thể khác `.` (ví dụ `.\SQLEXPRESS`); xem tên server trong
 3. Frontend: `cd frontend`, `npm install`, `npm run dev`, mở http://localhost:5173.
 4. Nếu cổng 8080 bị chiếm (ví dụ VMware dùng): đặt `server.port: 8081` trong `application.yml` và tạo `frontend/.env.local` chứa `AGR05_API=http://localhost:8081`.
 5. Dữ liệu mẫu: `mvn spring-boot:run -Dspring-boot.run.profiles=demo` (chạy sau `db/seed_demo.sql`). Tạo 7 tài khoản (`qt.minhkhoa`, `cg.thanhtam`, `cg.ngocanh`, `nd.vanbay`, `nd.thimai`, `nd.vantu`, `nd.vanut`, mật khẩu `Agr05@2026`), khoảng 880 báo cáo lịch sử có ảnh thật để huấn luyện AI, tình huống demo và mô hình AI đầu tiên. Số liệu lịch sử là mô phỏng, không dùng làm kết quả cho báo cáo. Làm mới: `db/lam_moi_du_lieu_mau.sql`.
-6. Test: `cd backend && mvn verify` (70 test, không cần CSDL). Test tích hợp: đặt biến `AGR05_TEST_DB` là chuỗi JDBC đầy đủ rồi chạy `mvn verify -Pintegration`.
+6. Test: `cd backend && mvn verify` (72 test, không cần CSDL). Test tích hợp: đặt biến `AGR05_TEST_DB` là chuỗi JDBC đầy đủ rồi chạy `mvn verify -Pintegration`.
 
 ## 2c. Bản đóng gói chạy một lệnh (dùng khi demo)
 

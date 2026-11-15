@@ -16,3 +16,7 @@ frontend/.env.local
 
 # Ban dong goi (dong-goi.bat): co application.yml that
 phat-hanh/
+
+~$*
+bao-cao/AGR05_OnTap_*
+bao-cao/ppt/*KichBan*

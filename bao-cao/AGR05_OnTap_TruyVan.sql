@@ -16,6 +16,7 @@ WHERE MaTrangThai = 'CHO_XAC_MINH'
 ORDER BY NgayGui ASC;
 GO
 
+
 -- Câu 2. Tìm các báo cáo có tiêu đề chứa chữ "rầy".
 SELECT MaBaoCao, TieuDe
 FROM BaoCaoHienTruong
